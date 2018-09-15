@@ -1,0 +1,107 @@
+---
+title: "Práctico 2. Modelos Binomiales"
+author: "Santiago Benitez-Vieyra"
+output:
+  html_document:
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Caso 1.
+A lotes con distintas cantidades de moscas (tot) se les aplicó 3 tipos de veneno (veneno) a distintas dosis (dosis) y se contabilizó el número de moscas muertas (muertos). Se intenta conocer cuál es el veneno más efectivo. Dado que la variable respuesta es una proporción (moscas muertas / moscas totales) se propone un modelo lineal generalizado con estructura de errores binomial para datos agregados.   
+   
+```{r, eval=FALSE}
+ven <- read.table("veneno.txt", header = TRUE)
+
+# construcción de la variable respuesta
+rta <- cbind(ven$muertos, ven$tot-ven$muertos)
+
+#modelo
+vfit <- glm(rta ~ veneno + dosis, data = ven, family = binomial(logit))
+
+#significancia según el estadístico de Wald
+summary(vfit)
+
+#análisis de la devianza 
+anova(vfit, test = "Chisq")
+
+#examen gráfico de los residuos
+layout(matrix(1:4, 2, 2))
+plot(vfit)
+layout(1)
+
+#examen sobre sobredispersión
+vfit2 <- glm(rta ~ veneno + dosis, data = ven, family = quasibinomial(logit))
+summary(vfit2)
+
+#examen sobre la pertinencia del enlace
+LP <- vfit$linear.predictors^2
+vfit3 <- glm(rta ~ veneno + dosis + LP, data = ven, family = binomial(logit))
+summary(vfit3)
+
+#INTERPRETACIÓN DE PARÁMETROS
+exp(vfit$coeff)
+
+# parámetros faltantes:
+
+ven$veneno2 <- relevel(ven$veneno, "R")
+reor.vfit <- glm(rta ~ veneno2 + dosis, family = binomial(logit), data = ven)
+summary(reor.vfit)
+exp(reor.vfit$coeff)
+1/exp(reor.vfit$coeff)
+
+```
+    
+## Caso 2.
+El archivo uta.txt contiene datos de un estudio donde se examinó la presencia de lagartijas del género Uta en 19 islas de Baja California. Se desea probar si la presencia de lagartijas (Uta: 0 = ausentes, 1= presentes) depende de la relación perímetro/área de las islas (PA.ratio).    
+Dado que los datos son de naturaleza binaria, se propone aplicar un modelo lineal generalizado con estructura de errores binomial, para datos no agregados (regresión logística).   
+
+```{r, eval=FALSE}
+datos <- read.table("uta.txt", header = TRUE)
+
+# modelo
+fit <- glm(Uta ~ PA.ratio, data = datos, family = binomial(logit))
+
+# parámetros y su significancia según el estadístico de Wald
+summary(fit)
+
+# interpretación de parámetros.
+exp(fit$coefficients)
+
+# notar cómo se vuelve más interpretable el intercepto al 
+# centrar la variable.
+datos$PA.ratio.2 <- datos$PA.ratio - mean(datos$PA.ratio, na.rm = T)
+
+fit2 <- glm(Uta ~ PA.ratio.2, data = datos, family = binomial(logit))
+summary(fit2)
+exp(fit2$coefficients)
+
+# análisis de la devianza 
+anova(fit2, test = "Chisq")
+
+# examen gráfico de los residuos
+layout(matrix(1:4, 2, 2))
+plot(fit2)
+layout(1)
+
+# examen sobre el enlace
+LP <- fit2$linear.predictors^2
+fit3 <- glm(Uta ~ PA.ratio.2 + LP, data = datos, family = binomial(logit))
+summary(fit3)
+
+#gráfico con predict
+X <- seq(0, 64, 0.5))
+Y <- predict(fit2, data.frame(PA.ratio.2 = X), type = "response")
+plot(Uta ~ PA.ratio.2, data = datos, xlab = "perímetro/área", 
+     ylab = "presencia de Uta")
+points(X$PA.ratio.2, Y, type = "l")
+
+```
+
+## Ejercicios
+1. El archivo budworm.txt contiene los resultados de un experimento donde a lotes de 20 gusanos del tabaco (Number) machos o hembras (Gender) se les aplicó un veneno en distintas concentraciones (Dose) y se examinó cuántos se morían (Killed). ¿Existe un efecto de la dosis de veneno sobre la mortalidad de los gusanos? ¿Existe un efecto del sexo? ¿Modifica el sexo del gusano su respuesta a dosis crecientes de veneno?   
+
+2. El archivo toxo.txt muestra el número de individuos afectados por toxoplasmosis (Infected), el número de individuos examinados (Sampled) y la precipitación anual en 34 ciudades de El Salvador. ¿Hay un efecto de la lluvia sobre la ocurrencia de toxoplasmosis? ¿A qué nivel de lluvia se espera que la mitad de la población se halle infectada?
