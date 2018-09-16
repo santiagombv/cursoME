@@ -93,15 +93,35 @@ fit3 <- glm(Uta ~ PA.ratio.2 + LP, data = datos, family = binomial(logit))
 summary(fit3)
 
 #gráfico con predict
-X <- seq(0, 64, 0.5))
+X <- seq(-20, 64, 0.5)
 Y <- predict(fit2, data.frame(PA.ratio.2 = X), type = "response")
 plot(Uta ~ PA.ratio.2, data = datos, xlab = "perímetro/área", 
      ylab = "presencia de Uta")
-points(X$PA.ratio.2, Y, type = "l")
+points(X, Y, type = "l")
 
+#matriz de confusión
+obs <- datos$Uta
+esp <- as.numeric(predict(fit2, type="response") > 0.5)
+table(esp, obs)
+
+library(caret)
+confusionMatrix(table(esp, obs))
+
+# curva ROC sobre los datos de entrenamiento (!)
+# (pocos datos para que sea informativo, sólo como ejemplo)
+library(ROCR)
+pr <- prediction(esp, datos$Uta)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
 ```
 
 ## Ejercicios
 1. El archivo budworm.txt contiene los resultados de un experimento donde a lotes de 20 gusanos del tabaco (Number) machos o hembras (Gender) se les aplicó un veneno en distintas concentraciones (Dose) y se examinó cuántos se morían (Killed). ¿Existe un efecto de la dosis de veneno sobre la mortalidad de los gusanos? ¿Existe un efecto del sexo? ¿Modifica el sexo del gusano su respuesta a dosis crecientes de veneno?   
 
 2. El archivo toxo.txt muestra el número de individuos afectados por toxoplasmosis (Infected), el número de individuos examinados (Sampled) y la precipitación anual en 34 ciudades de El Salvador. ¿Hay un efecto de la lluvia sobre la ocurrencia de toxoplasmosis? ¿A qué nivel de lluvia se espera que la mitad de la población se halle infectada?
+
+3. Supongamos una enfermedad que tiene baja incidencia (1 en 10000). Para realizar un estudio sobre los factores ambientales que predisponen a esa enfermedad se localizaron 20 individuos afectados en una ciudad y se tomaron como control 50 individuos elegidos de forma aleatoria en la misma ciudad. ¿Cuáles son las consecuencias sobre el modelos estadístico de este diseño?
+
+4. En una revisión reciente de modelos logísticos en contexto filogenético Ives y Garland afirman que datos (o simulaciones) donde más de 7/8 de las simulaciones sean 0 o 1 "contienen poca información, y un investigador prudente no debería analizarlos en primer lugar". Esta afirmación aplica no sólo a modelos filogenéticos sino a cualquier regresión logística. Explique los motivos. (ayuda: utilice tablas de confusión)
+
+5. ¿Tiene usted datos de naturaleza Binomial? (n > 50). Discuta con sus compañeres de mesa, prestando especial atención a: a) el proceso ue originaron los datos, b) distinga la naturaleza agregada o no agregada de los datos. c) Presente sus datos con gráficos y análisis (o al menos los pasos a seguir en el análisis). d) En caso de datos de naturaleza binaria, divida el set de datos en dos para realizar matrices de confusión sobre datos de entrenamiento y datos de prueba.
