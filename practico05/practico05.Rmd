@@ -1,0 +1,23 @@
+---
+title: "Práctico 5. Estructuras de correlación"
+author: "Santiago Benitez-Vieyra"
+output:
+  html_document:
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Caso 1. 
+Se pretende modelar la abundancia de una especie de ave en relación a la precipitación anual. Para esto se cuenta con una serie temporal con registros desde 1956 hasta 2003. 
+```{r, eval=FALSE}
+library(nlme)
+dat <- read.table("tempcorr.txt", header = TRUE)
+plot(abund ~ year, data = dat)
+plot(abund ~ rain, data = dat)
+
+``` 
+
+

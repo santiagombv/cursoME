@@ -195,7 +195,7 @@ qfit <- glmmPQL(Richness ~ NAP+Exposure, random = ~NAP|Beach,
 summary(qfit)
 ```
 
-### Análisis en mgcv::gamm Generalized Aditive Mixed Models
+### Análisis en gamm4::gamm4 Generalized Aditive Mixed Models (basado en mgcv)
 ```{r, eval=FALSE}
 library(gamm4)
 rikz <- read.table("RIKZ.txt", header = TRUE)
