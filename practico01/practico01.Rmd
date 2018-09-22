@@ -81,3 +81,5 @@ pchisq(d[1], df=1, lower.tail=F)/2
 ```
 
 4. ¿Tiene usted datos de naturaleza Poisson? (n > 30). Discuta con sus compañeres de mesa, prestando especial atención a: a) el proceso ue originaron los datos, b) una estrategia global de análisis, c) las posibles fuentes de sobredispersión. Presente sus datos con gráficos y análisis (o al menos los pasos a seguir en el análisis).
+   
+   
