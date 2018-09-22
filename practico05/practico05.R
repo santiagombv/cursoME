@@ -1,19 +1,9 @@
----
-title: "Práctico 5. Estructuras de correlación"
-author: "Santiago Benitez-Vieyra"
-output:
-  html_document:
-    highlight: tango
----
+### Práctico 5. Estructuras de correlación
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+############
+## Caso 1 ##
+############
 
-## Caso 1. 
-Se pretende modelar la abundancia de una especie de ave en relación a la precipitación anual. Para esto se cuenta con una serie temporal con registros desde 1956 hasta 2003.   
-
-```{r, eval=FALSE}
 library(nlme)
 dat <- read.table("tempcorr.txt", header = TRUE)
 plot(abund ~ year, data = dat)
@@ -37,12 +27,10 @@ m2 <- gls(abund ~ rain + year, na.action = na.omit, data = dat,
           correlation = corAR1(form = ~ year))
 summary(m2)
 AIC(m2)
-```
 
-## Caso 2.
-Se intenta determinar si cierta característica comunitaria del bosque siberiano se encuentra relacionada con características climáticas como la humedad ambiental. Para cada observación se consigna la latitud y longitud.
-
-```{r, eval=FALSE}
+#############
+## Caso 2. ##
+#############
 dat <- read.table("Boreality.txt", header = TRUE)
 head(dat)
 
@@ -103,12 +91,11 @@ plot(var6)
 ## modelo final
 summary(m6)
 plot(m6)
-```
 
-## Caso 3.
-Se intenta modelar el peso de los testículos del calamar en función de la longitud dorsal del manto y el mes de captura.   
+############
+## Caso 3 ##
+############
 
-```{r, eval=FALSE}
 Squid <- read.table("Squid.txt", header = TRUE)
 Squid$MONTH <- as.factor(Squid$MONTH)
 
@@ -150,12 +137,3 @@ coplot(resid(m0, type = "normalized") ~ DML | MONTH,
 coplot(resid(m3b, type = "normalized") ~ DML | MONTH, 
        data = Squid)
 
-```
-
-## Ejercicios.
-1. Se intenta conocer si la fecha de la puesta de huevos del petrel antártico (LayingAP) se relaciona con el área cubierta por hielo marino (MSA). Los datos corresponden a una serie temporal entre 1951 y 2005 (Year) y se encuentran en el archivo petrel.txt.    
-   
-2. Se pretende conocer la relación entre la edad (x) y la incidencia de diabetes de tipo II (y). los datos fueron tomados en 100 sitios de Australia. Las coordenadas geográficas y los valores de las variables se encuentran en el archivo spatial.txt.   
-   
-3. ¿A que tipo de estructuras corresponden *corBrownian*, *corPagel* y *corMartins*? ¿Tiene datos que permitan utilizar estas estructuras? En ese caso desarrolle una comparación de modelos con diferentes estructuras.   
-   
