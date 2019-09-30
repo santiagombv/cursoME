@@ -4,54 +4,44 @@
 ### Caso1 ###
 #############
 
-ants <- read.table("hormigas.txt", header = TRUE)
+ven <- read.table("veneno.txt", header = TRUE)
 
-# modelo
-gfit1 <- glm(Srich ~ Habitat + Latitude + Elevation, data = ants, family = poisson)
+# construcción de la variable respuesta
+rta <- cbind(ven$muertos, ven$tot-ven$muertos)
 
-# Tabla "tipo regresión" valores de los parámetros y prueba de Wald
-summary(gfit1)
+#modelo
+vfit <- glm(rta ~ veneno + dosis, data = ven, family = binomial(logit))
 
-# Tabla de análisis de la devianza
-anova(gfit1, test = "Chisq")
+#significancia según el estadístico de Wald
+summary(vfit)
 
-#significancia del modelo completo (cociente de verosimilitud)
-gfit0 <- glm(Srich ~ 1, data = ants, family = poisson (link = log))
-anova(gfit0, gfit1, test = "Chisq")
+#análisis de la devianza 
+anova(vfit, test = "Chisq")
 
-#cociente de veerosimilitud (con lrtest)
-library(lmtest)
-lrtest(gfit0, gfit1)
-
-#DIAGNÓSTICOS COMUNES
+#examen gráfico de los residuos
 layout(matrix(1:4, 2, 2))
-plot(gfit1)
+plot(vfit)
 layout(1)
 
-library(car)
-vif(gfit1)
+#examen sobre sobredispersión
+vfit2 <- glm(rta ~ veneno + dosis, data = ven, family = quasibinomial(logit))
+summary(vfit2)
 
-#DIAGNÓSTICOS PARA MLG
-# 1¿Es adecuada la relación media-varianza? (¿es el parámetro de   
-# dispersión = a 1?)
-gfit2 <- glm(Srich ~ Habitat + Latitude + Elevation, data = ants, 
-             family = quasipoisson(link=log))
+#examen sobre linealidad
+LP <- vfit$linear.predictors^2
+vfit3 <- glm(rta ~ veneno + dosis + LP, data = ven, family = binomial(logit))
+summary(vfit3)
 
-summary(gfit2)
-anova(gfit2, test = "F")
+#INTERPRETACIÓN DE PARÁMETROS
+exp(vfit$coeff)
 
-# 2 ¿Es adecuado el enlace? (¿es lineal la relación?)
-PL <- gfit1$linear.predictors^2
-gfit3 <- glm(Srich ~ Habitat + Latitude + Elevation + PL, data=ants,
-             family = poisson(link=log))
-summary(gfit3)
+# parámetros faltantes:
 
-# INTERPRETACIÓN DE LOS PARÁMETROS
-be <- gfit1$coefficients
-exp(be)
-
-IC <- confint(gfit1)
-exp(IC)
+ven$veneno2 <- relevel(ven$veneno, "R")
+reor.vfit <- glm(rta ~ veneno2 + dosis, family = binomial(logit), data = ven)
+summary(reor.vfit)
+exp(reor.vfit$coeff)
+1/exp(reor.vfit$coeff)
 
 ############
 ## Caso 2 ##
@@ -84,7 +74,7 @@ layout(matrix(1:4, 2, 2))
 plot(fit2)
 layout(1)
 
-# examen sobre el enlace
+# examen sobre linealidad
 LP <- fit2$linear.predictors^2
 fit3 <- glm(Uta ~ PA.ratio.2 + LP, data = datos, family = binomial(logit))
 summary(fit3)
@@ -107,7 +97,7 @@ confusionMatrix(table(esp, obs))
 # curva ROC sobre los datos de entrenamiento (!)
 # (pocos datos para que sea informativo, sólo como ejemplo)
 library(ROCR)
-pr <- prediction(esp, datos$Uta)
+pr <- prediction(predict(fit2, type="response"), datos$Uta)
 prf <- performance(pr, measure = "tpr", x.measure = "fpr")
 plot(prf)
 
