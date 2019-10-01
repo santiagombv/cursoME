@@ -14,7 +14,7 @@ RIKZ$Richness <- rowSums(RIKZ[, 2:76] > 0)
 RIKZ$exposure <- as.factor(RIKZ$exposure)
 
 #exploración
-layout(matrix(1:3,1,3))
+layout(matrix(1:2, 1, 2))
 plot(Richness ~ NAP, data=RIKZ)
 plot(Richness ~ exposure, data=RIKZ)
 layout(1)
@@ -124,7 +124,8 @@ m2 <- gam(pol ~ s(nec, flo, k = 100, bs = "tp"), data=cyc,
           family = poisson, method = "REML")
 summary(m2)
 
-vis.gam(m2, view = c("nec", "flo"), type = "response", plot.type = "contour")
+vis.gam(m2, view = c("nec", "flo"), type = "response", 
+        plot.type = "contour", color = "cm")
 
 # comparación
 BIC(m1, m2)
@@ -154,15 +155,15 @@ BIC(m3, m4, m5)
 
 #gráficos
 layout(matrix(1:3,1,3))
-vis.gam(m3, plot.type = "contour", color = "topo", type = "response", 
+vis.gam(m3, plot.type = "contour", color = "cm", type = "response", 
         n.grid = 100, main = NULL)
 points(cyc$nec, cyc$flo, pch = 20)
 
-vis.gam(m4, plot.type = "contour", color = "topo", type = "response", 
+vis.gam(m4, plot.type = "contour", color = "cm", type = "response", 
         n.grid = 100, main = NULL)
 points(cyc$nec, cyc$flo, pch = 20)
 
-vis.gam(m5, plot.type = "contour", color = "topo", type = "response", 
+vis.gam(m5, plot.type = "contour", color = "cm", type = "response", 
         n.grid = 100, main = NULL)
 points(cyc$nec, cyc$flo, pch = 20)
 
