@@ -1,7 +1,5 @@
----
-title: "License"
-author: "Santiago Benitez-Vieyra"
----
+**By Santiago Benitez-Vieyra**
+
 
 CC0 1.0 Universal
 
