@@ -258,7 +258,7 @@ m5_p %>%
 - Tip 3: "cc"   
 
 2. El archivo elecciones.txt contiene los resultados de las elecciones PASO 2015 para los 117 circuitos electorales de la ciudad de Córdoba, junto a la geolocalización del centro de estos circuitos. Elija un partido político y construya un mapa de la estructura espacial de sus votos.    
-- Tip: el paquete `ggmap` y las funciones `get_openstreetmap` o `get_stamenmap` (para evitar usar la API de Google).    
+- Tip: el paquete `ggmap` y las funciones `get_openstreetmap` o `get_stamenmap` (para evitar usar la API de Google Maps).    
 
 3. El archivo wesdr.txt (originalmente del paquete *gss*) contiene datos sobre la incidencia de retinoplastía diabética (ret, codificado en 0 o 1) y se intenta modelar esta enfermedad en función del tiempo desde la aparición de la diabetes (dur), el índice de masa corporal (bmi) y el porcentaje de hemoglobina glicosilada en sangre (gly). Construya un modelo y utilice matrices de confusión y ROC para revisar su adecuación.    
 

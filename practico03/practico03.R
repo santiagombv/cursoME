@@ -17,7 +17,7 @@ RIKZ$exposure <- as.factor(RIKZ$exposure)
 
 #exploración
 layout(matrix(1:2, 1, 2))
-plot(Richness ~ NAP, data=RIKZ)
+plot(Richness ~ NAP, data=RIKZ, col=RIKZ$exposure)
 plot(Richness ~ exposure, data=RIKZ)
 layout(1)
 
