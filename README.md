@@ -1,5 +1,8 @@
 ![header_R](/images/portada.png)
 
+
+### Docente: [Dr. Santiago Benitez-Vieyra.](http://santiagombv.github.io/) Instituto Multidisciplinario de Biología Vegetal (Universidad Nacional de Córdoba - CONICET).    
+
 #### Del 28 de octubre al 1 de noviembre de 2019. Aula del Doctorado en Ciencias Biológicas (UNC), Av. Vélez Sársfield esq. Duarte Quiros, Ciudad de Córdoba.   
 
 #### Para este curso se reuiere la instalación de los softwares R y Rstudio (últimas versiones disponibles) y de los siguientes paquetes de R: *ape*, *blmeco*, *car*, *caret*, *gamm4*, *ggmap*, *ggplot2*, *gstat*, *lme4*, *lmerTest*, *MASS*, *MCMCglmm*, *mgcv*, *nlme*, *pbkrtest*, *pscl*, *RLRsim*, *ROCR*, *sp*, *tidymv* y *viridis*. Todos estos paquetes debe estar instalados con todas sus dependencias y en la última versión disponible. Para asegurarse de esto último, ejecute update.packages() en la consola de R.
