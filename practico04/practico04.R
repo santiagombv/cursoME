@@ -5,7 +5,6 @@
 ### Análisis en nlme::lme ###
 #############################
 
-```{r, eval=FALSE}
 library(nlme)
 rikz <- read.table("RIKZ.txt", header = TRUE)
 rikz$Beach <- as.factor(rikz$Beach)
@@ -36,13 +35,13 @@ anova(r1, r2) # dividir el P sobre 2
 # Reajustamos el modelo por ML.
 f1 <- lme(Richness ~ NAP*Exposure, random = ~ 1 | Beach, 
           data = rikz, method = "ML")
-f2 <- lme(Richness ~ NAP+Exposure, random = ~ 1 | Beach, 
+f2 <- lme(Richness ~ NAP + Exposure, random = ~ 1 | Beach, 
           data = rikz, method = "ML")
 
 anova(f1, f2) #se puede usar AIC, BIC o L.ratios test
 
 # 3) Presentamos el modelo (ajustado por REML)
-fit <- lme(Richness ~ NAP+Exposure, random = ~ 1 | Beach, 
+fit <- lme(Richness ~ NAP + Exposure, random = ~ 1 | Beach, 
            data = rikz, method = "REML")
 summary(fit)
 
@@ -68,7 +67,7 @@ rikz$Exposure <- as.factor(rikz$exposure)
 rikz$Richness <- rowSums(rikz[, 2:76] > 0)
 
 # 1) Elección de la mejor parte random.
-r0 <- lm(Richness ~ NAP*Exposure, data = rikz)
+r0 <- lm(Richness ~ NAP*Exposure, data = rikz) # atención! no siempre...
 r1 <- lmer(Richness ~ NAP*Exposure + (1|Beach), 
            data = rikz, REML = TRUE)
 r2 <- lmer(Richness ~ NAP*Exposure + (0 + NAP|Beach), 
@@ -92,7 +91,7 @@ pb
 
 # 2) Eleccion de la parte fija.
 f1 <- lmer(Richness ~ NAP*Exposure + (1|Beach), data = rikz, REML=F)
-f2 <- lmer(Richness ~ NAP+Exposure + (1|Beach), data = rikz, REML=F)
+f2 <- lmer(Richness ~ NAP + Exposure + (1|Beach), data = rikz, REML=F)
 
 anova(f1, f2) #se puede usar AIC, BIC o L.ratios test
 
@@ -164,8 +163,17 @@ plot(res ~ rikz$Exposure)
 plot(res ~ rikz$NAP)
 
 # 5 sobrediperso???
-library(blmeco)
-dispersion_glmer(fit)
+# * de Ben Bolker 
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)
+  rp <- residuals(model,type="pearson")
+  Pearson.chisq <- sum(rp^2)
+  prat <- Pearson.chisq/rdf
+  pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+  c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+overdisp_fun(fit) 
 
 ############################################################
 ### Análisis en MASS::glmnPQL penalized QUASI likelihood ###
@@ -182,12 +190,18 @@ q1 <- glmmPQL(Richness ~ NAP*Exposure, random = ~1|Beach,
               data = rikz, family=poisson)
 q2 <- glmmPQL(Richness ~ NAP*Exposure, random = ~NAP|Beach, 
               data = rikz, family=poisson)
-#??????
+# ideas??????
 
 # 2) presentación del modelo
 qfit <- glmmPQL(Richness ~ NAP+Exposure, random = ~NAP|Beach, 
                 data = rikz, family=poisson)
 summary(qfit)
+
+#################################################################
+### Análisis en MCMCglmm bayesian & random individual effects ###
+#################################################################
+
+library(MCMCglmm)
 
 
 ##################################################################################
@@ -223,9 +237,17 @@ summary(g4$gam) # en este ejemplo son casi iguales
 # 3) modelo
 summary(g4$gam)
 
-layout(matrix(1:2,1,1))
+layout(matrix(1:2,1,2))
 plot(g4$gam)
 layout(1)
+
 vis.gam(g4$gam, theta = 45, scale = "response")
+
+library(tidymv)
+library(ggplot2)
+g1 <- plot_smooths(g4$gam, series = NAP, comparison = Exposure, transform = exp) 
+g1 <- g1 + scale_fill_manual(values = c("red", "orange", "yellow"))
+g1 <- g1 + scale_color_manual(values = c("red", "orange", "yellow"))
+g1 + theme_bw() + theme(legend.position = "top")
 
 ### END ###
