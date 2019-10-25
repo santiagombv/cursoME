@@ -45,13 +45,13 @@ anova(r1, r2) # dividir el P sobre 2
 # Reajustamos el modelo por ML.
 f1 <- lme(Richness ~ NAP*Exposure, random = ~ 1 | Beach, 
           data = rikz, method = "ML")
-f2 <- lme(Richness ~ NAP+Exposure, random = ~ 1 | Beach, 
+f2 <- lme(Richness ~ NAP + Exposure, random = ~ 1 | Beach, 
           data = rikz, method = "ML")
 
 anova(f1, f2) #se puede usar AIC, BIC o L.ratios test
 
 # 3) Presentamos el modelo (ajustado por REML)
-fit <- lme(Richness ~ NAP+Exposure, random = ~ 1 | Beach, 
+fit <- lme(Richness ~ NAP + Exposure, random = ~ 1 | Beach, 
            data = rikz, method = "REML")
 summary(fit)
 
@@ -76,13 +76,13 @@ rikz$Exposure <- as.factor(rikz$exposure)
 rikz$Richness <- rowSums(rikz[, 2:76] > 0)
 
 # 1) Elección de la mejor parte random.
-r0 <- lm(Richness ~ NAP*Exposure, data = rikz)
+r0 <- lm(Richness ~ NAP*Exposure, data = rikz) # atención! no siempre...
 r1 <- lmer(Richness ~ NAP*Exposure + (1|Beach), 
-            data = rikz, REML = TRUE)
+           data = rikz, REML = TRUE)
 r2 <- lmer(Richness ~ NAP*Exposure + (0 + NAP|Beach), 
-            data = rikz, REML = TRUE) 
+           data = rikz, REML = TRUE) 
 r3 <- lmer(Richness ~ NAP*Exposure + (1|Beach) + (0 + NAP|Beach), 
-            data = rikz, REML = TRUE)
+           data = rikz, REML = TRUE)
 AIC(r1)
 AIC(r2)
 AIC(r3)
@@ -100,7 +100,7 @@ pb
 
 # 2) Eleccion de la parte fija.
 f1 <- lmer(Richness ~ NAP*Exposure + (1|Beach), data = rikz, REML=F)
-f2 <- lmer(Richness ~ NAP+Exposure + (1|Beach), data = rikz, REML=F)
+f2 <- lmer(Richness ~ NAP + Exposure + (1|Beach), data = rikz, REML=F)
 
 anova(f1, f2) #se puede usar AIC, BIC o L.ratios test
 
@@ -158,7 +158,7 @@ anova(f1, f2) #se puede usar AIC, BIC o L.ratios test
 # 3) Presentamos el modelo.
 library(lmerTest) # aprox. Satterthwaite (modifica a glmer)
 fit <- glmer(Richness ~ NAP+Exposure + (1|Beach)+ (0 + NAP|Beach), 
-            data = rikz, family = poisson)
+             data = rikz, family = poisson)
 summary(fit) # sin P en fijos
 
 # 4) Diagnósticos gráficos.
@@ -170,8 +170,17 @@ plot(res ~ rikz$Exposure)
 plot(res ~ rikz$NAP)
 
 # 5 sobrediperso???
-library(blmeco)
-dispersion_glmer(fit)
+# * de Ben Bolker 
+overdisp_fun <- function(model) {
+  rdf <- df.residual(model)
+  rp <- residuals(model,type="pearson")
+  Pearson.chisq <- sum(rp^2)
+  prat <- Pearson.chisq/rdf
+  pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+  c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+overdisp_fun(fit) 
 ```
 
 ### Análisis en MASS::glmnPQL penalized QUASI likelihood
@@ -187,12 +196,71 @@ q1 <- glmmPQL(Richness ~ NAP*Exposure, random = ~1|Beach,
               data = rikz, family=poisson)
 q2 <- glmmPQL(Richness ~ NAP*Exposure, random = ~NAP|Beach, 
               data = rikz, family=poisson)
-#??????
+summary(q1)
+summary(q2)
+# ideas??????
 
 # 2) presentación del modelo
 qfit <- glmmPQL(Richness ~ NAP+Exposure, random = ~NAP|Beach, 
                 data = rikz, family=poisson)
 summary(qfit)
+```
+
+### Análsis en MCMCglmm Bayesianos!
+```{r, eval=FALSE}
+library(MCMCglmm)
+rikz <- read.table("RIKZ.txt", header = TRUE)
+rikz$Beach <- as.factor(rikz$Beach)
+rikz$Exposure <- as.factor(rikz$exposure)
+rikz$Richness <- rowSums(rikz[, 2:76] > 0)
+
+# Construcción del (flat) prior
+# R refiere a la estructura de los residuos
+# G a la estructura de los efectos random
+
+prior <- list(R = list(V = 1, nu = 0.002), 
+              G = list(G1 = list(V = 1, nu = 0.002)))
+
+b1 <- MCMCglmm(Richness ~ NAP*Exposure, random = ~Beach, 
+               data = rikz, family = "poisson", prior = prior,
+               verbose = FALSE, pr = TRUE, 
+               nitt=13000, thin=10, burnin=3000) # controlar
+
+#  posterior modes
+posterior.mode(b2$Sol)
+# posterior distributions
+plot(b1$Sol[,"(Intercept)"])
+plot(b1$Sol[,"NAP"])
+plot(b1$Sol[,"Exposure11"]) 
+plot(b1$Sol[,"NAP:Exposure11"]) # siguen otras
+
+plot(b1$VCV) # esto es horrible, pero...
+autocorr(b1$VCV) # cambiar nitt, thin, burnin
+
+b1$DIC
+summary(b1)
+
+# random más complejo
+b2 <- MCMCglmm(Richness ~ NAP*Exposure, random = ~ us(NAP):Beach, 
+               data = rikz, family = "poisson", prior = prior,
+               verbose = FALSE, pr = TRUE,
+               nitt=13000, thin=10, burnin=3000) # copiar anteriores...
+
+#  posterior modes
+posterior.mode(b2$Sol)
+# posterior distributions
+plot(b2$Sol[,"(Intercept)"])
+plot(b2$Sol[,"NAP"])
+plot(b2$Sol[,"Exposure11"]) 
+plot(b2$Sol[,"NAP:Exposure11"]) # siguen otras
+
+plot(b2$VCV) # sigue horrible...
+autocorr(b2$VCV) # cambiar nitt, thin, burnin
+
+b2$DIC
+summary(b2)
+
+# cómo sería el modelo más complejo?
 ```
 
 ### Análisis en gamm4::gamm4 Generalized Aditive Mixed Models (basado en mgcv)
@@ -207,6 +275,7 @@ rikz$Richness <- rowSums(rikz[, 2:76] > 0)
 g1 <- gamm4(Richness ~ Exposure + s(NAP, by = Exposure), 
             random =~ (1|Beach), 
             family = poisson, data = rikz)
+
 g2 <- gamm4(Richness ~ Exposure + s(NAP, by = Exposure), 
             random =~ (1|Beach) + (0 + NAP|Beach), 
             family = poisson, data = rikz)
@@ -226,20 +295,28 @@ summary(g4$gam) # en este ejemplo son casi iguales
 # 3) modelo
 summary(g4$gam)
 
-layout(matrix(1:2,1,1))
+layout(matrix(1:2,1,2))
 plot(g4$gam)
 layout(1)
+
 vis.gam(g4$gam, theta = 45, scale = "response")
+
+library(tidymv)
+library(ggplot2)
+g1 <- plot_smooths(g4$gam, series = NAP, comparison = Exposure, transform = exp) 
+g1 <- g1 + scale_fill_manual(values = c("red", "orange", "yellow"))
+g1 <- g1 + scale_color_manual(values = c("red", "orange", "yellow"))
+g1 + theme_bw() + theme(legend.position = "top")
 ```
 
 ## Ejercicios.
 
-1. Se intenta modelar los factores asociados a la infección parasitaria de ciervos rojos por parte del parásito *Elaphostrongylus cervi*. La variable respuesta, infección (infec), se encuentra codificada como 0 y 1. Las variables explicativas propuestas son el largo del ciervo (Length) y su sexo (Sex). Los datos fueron obtenidos de diferentes granjas en España, por lo que se considera que los individuos de la misma granja no constituyen observaciones independientes. Centrar la variable Length antes de ajustar el modelo. Los datos se encuentran en el archivo deer.txt.
+1. Se intenta modelar los factores asociados a la infección parasitaria de ciervos rojos por parte del parásito *Elaphostrongylus cervi*. La variable respuesta, infección (infec), se encuentra codificada como 0 y 1. Las variables explicativas propuestas son el largo del ciervo (Length) y su sexo (Sex). Los datos fueron obtenidos de diferentes granjas en España, por lo que se considera que los individuos de la misma granja no constituyen observaciones independientes. Centrar la variable Length antes de ajustar el modelo. Los datos se encuentran en el archivo deer.txt. **Fuente:** Zuur A, Ieno EN, Walker N *et al.* 2009. *Mixed effects models and extensions in ecology with R*. Springer Science & Business Media.  
 
-2. Se intenta conocer si el número de flores por planta (flores) y el área de las glándulas productoras de fragancia (olor) influyen sobre el número de abejas nativas (abejas) que visitan plantas de orquídea. Las observaciones se hicieron en diferentes parches, y por ser el olor una señal difusa se supone que los datos de un mismo parche no son totalmente independientes. Los datos se encuentran
-en el archivo abejas.txt.
+2. Se intenta conocer si el número de flores por planta (flores) y el área de las glándulas productoras de fragancia (olor) influyen sobre el número de abejas nativas (abejas) que visitan plantas de orquídea. Las observaciones se hicieron en diferentes parches, y por ser el olor una señal difusa se supone que los datos de un mismo parche no son totalmente independientes. Los datos se encuentran en el archivo abejas.txt. **Fuente:** Benitez-Vieyra S, Glinos E, Medina AM. *et al.* 2012. *Evol. Ecol.* 26:1451-1468.    
 
-3. Desafío: ¿Alguna vez ajustó un modelo mixto bayesiano? Existen. Visite las viñetas del paquete [MCMCglmm](https://cran.r-project.org/web/packages/MCMCglmm/vignettes/CourseNotes.pdf). Ajuste un modelo multirespuesta para el set de datos long.txt correspondientes a medidas tomadas en flores de *Salvia longispicata*. Calcule una matriz de covarianza intraindividual y una interindividual para la asociación entre néctar (rew) y aŕea frontal del la flor (sig1), considerando que la columna planta indica el individuo donde se realizaron las mediciones.    
+3. Desafío: Visite las viñetas del paquete [MCMCglmm](https://cran.r-project.org/web/packages/MCMCglmm/vignettes/CourseNotes.pdf). Ajuste un modelo multirespuesta para el set de datos long.txt correspondientes a medidas tomadas en flores de *Salvia longispicata*. Calcule una matriz de covarianza intraindividual y una interindividual para la asociación entre néctar (rew) y aŕea frontal del la flor (sig1), considerando que la columna planta indica el individuo donde se realizaron las mediciones. **Fuente:** Benitez-Vieyra S, Fornoni J, Pérez-Alquicira J, *et al.* 2014. The evolution of signal–reward correlations in bee-and hummingbird-pollinated species of *Salvia*. *Proc. Roy. Soc. B* 281: 20132934.    
+
 Tip: el prior   
 `priorX<-list(G = list(G1 = list(V = diag(2), nu = 1.002)), R = list(V = diag(2), nu = 1.002))`   
 

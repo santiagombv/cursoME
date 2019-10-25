@@ -190,6 +190,8 @@ q1 <- glmmPQL(Richness ~ NAP*Exposure, random = ~1|Beach,
               data = rikz, family=poisson)
 q2 <- glmmPQL(Richness ~ NAP*Exposure, random = ~NAP|Beach, 
               data = rikz, family=poisson)
+summary(q1)
+summary(q2)
 # ideas??????
 
 # 2) presentación del modelo
@@ -202,7 +204,58 @@ summary(qfit)
 #################################################################
 
 library(MCMCglmm)
+rikz <- read.table("RIKZ.txt", header = TRUE)
+rikz$Beach <- as.factor(rikz$Beach)
+rikz$Exposure <- as.factor(rikz$exposure)
+rikz$Richness <- rowSums(rikz[, 2:76] > 0)
 
+# Construcción del (flat) prior
+# R refiere a la estructura de los residuos
+# G a la estructura de los efectos random
+
+prior <- list(R = list(V = 1, nu = 0.002), 
+              G = list(G1 = list(V = 1, nu = 0.002)))
+
+b1 <- MCMCglmm(Richness ~ NAP*Exposure, random = ~Beach, 
+               data = rikz, family = "poisson", prior = prior,
+               verbose = FALSE, pr = TRUE, 
+               nitt=13000, thin=10, burnin=3000) # controlar
+
+#  posterior modes
+posterior.mode(b2$Sol)
+# posterior distributions
+plot(b1$Sol[,"(Intercept)"])
+plot(b1$Sol[,"NAP"])
+plot(b1$Sol[,"Exposure11"]) 
+plot(b1$Sol[,"NAP:Exposure11"]) # siguen otras
+
+plot(b1$VCV) # esto es horrible, pero...
+autocorr(b1$VCV) # cambiar nitt, thin, burnin
+
+b1$DIC
+summary(b1)
+
+# random más complejo
+b2 <- MCMCglmm(Richness ~ NAP*Exposure, random = ~ us(NAP):Beach, 
+               data = rikz, family = "poisson", prior = prior,
+               verbose = FALSE, pr = TRUE,
+               nitt=13000, thin=10, burnin=3000) # copiar anteriores...
+
+#  posterior modes
+posterior.mode(b2$Sol)
+# posterior distributions
+plot(b2$Sol[,"(Intercept)"])
+plot(b2$Sol[,"NAP"])
+plot(b2$Sol[,"Exposure11"]) 
+plot(b2$Sol[,"NAP:Exposure11"]) # siguen otras
+
+plot(b2$VCV) # sigue horrible...
+autocorr(b2$VCV) # cambiar nitt, thin, burnin
+
+b2$DIC
+summary(b2)
+
+# cómo sería el modelo más complejo?
 
 ##################################################################################
 ### Análisis en gamm4::gamm4 Generalized Aditive Mixed Models (basado en mgcv) ###
@@ -218,6 +271,7 @@ rikz$Richness <- rowSums(rikz[, 2:76] > 0)
 g1 <- gamm4(Richness ~ Exposure + s(NAP, by = Exposure), 
             random =~ (1|Beach), 
             family = poisson, data = rikz)
+
 g2 <- gamm4(Richness ~ Exposure + s(NAP, by = Exposure), 
             random =~ (1|Beach) + (0 + NAP|Beach), 
             family = poisson, data = rikz)
