@@ -10,7 +10,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Caso 1.
+## Caso 1.
 A lotes con distintas cantidades de moscas (tot) se les aplicó 3 tipos de veneno (veneno) a distintas dosis (dosis) y se contabilizó el número de moscas muertas (muertos). Se intenta conocer cuál es el veneno más efectivo. Dado que la variable respuesta es una proporción (moscas muertas / moscas totales) se propone un modelo lineal generalizado con estructura de errores binomial para datos agregados.   
    
 ```{r, eval=FALSE}
