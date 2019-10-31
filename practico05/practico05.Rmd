@@ -153,9 +153,9 @@ coplot(resid(m3b, type = "normalized") ~ DML | MONTH,
 ```
 
 ## Ejercicios.
-1. Se intenta conocer si la fecha de la puesta de huevos del petrel antártico (LayingAP) se relaciona con el área cubierta por hielo marino (MSA). Los datos corresponden a una serie temporal entre 1951 y 2005 (Year) y se encuentran en el archivo petrel.txt.    
+1. Se intenta conocer si la fecha de llegada a Antártida del Petrel del Cabo (ArrivalCP) se relaciona con el área cubierta por hielo marino (MSA). Los datos corresponden a una serie temporal entre 1951 y 2005 (Year) y se encuentran en el archivo Antarcticbirds.txt.    
    
-2. Se pretende conocer la relación entre la edad (x) y la incidencia de diabetes de tipo II (y). los datos fueron tomados en 100 sitios de Australia. Las coordenadas geográficas y los valores de las variables se encuentran en el archivo spatial.txt.   
+2. Se pretende conocer la relación entre la edad y la incidencia de diabetes de tipo II. los datos fueron tomados en 100 sitios de Australia. Las coordenadas geográficas y los valores de las variables se encuentran en el archivo spatial.txt.   
    
-3. ¿A que tipo de estructuras corresponden *corBrownian*, *corPagel* y *corMartins*? ¿Tiene datos que permitan utilizar estas estructuras? En ese caso desarrolle una comparación de modelos con diferentes estructuras.   
+3. ¿Posee datos con efectos de autocorrelación espacial o temporal? Dialogue con sus compañeres de mesa sobre la mala suerte que le aqueja. Luego presente una estrategia de análisis para sus datos. 
    
