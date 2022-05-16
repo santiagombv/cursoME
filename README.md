@@ -1,6 +1,6 @@
 ![header_R](/images/portada.png)
 
-#### WARNING: WORK IN PROGRESS
+#### WORK IN PROGRESS
 
 #### Docente: [Dr. Santiago Benitez-Vieyra.](http://santiagombv.github.io/) Instituto Multidisciplinario de Biología Vegetal (Universidad Nacional de Córdoba - CONICET).    
 
